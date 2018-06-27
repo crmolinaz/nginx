@@ -1,0 +1,36 @@
+# nginx config with test purposes, to simulate an answer from the backend
+
+server {
+  listen       80;
+  server_name  localhost;
+
+  location / {
+    root   /usr/share/nginx/html;
+    index  index.html;
+  }
+
+ location ~ ^/books/(.*)/detail$ {
+    default_type application/json;
+
+    set $BOOK_ID "$1";
+    # if a book with id "XXXX" is requested, nginx will return http status 200 / ok but with active attr false
+    if ($BOOK_ID = "XXXX") {
+         return 200 '{"book_id":"$BOOK_ID","book_name":"test book","active":false}';
+    }
+
+    # if a book with id "YYYY" is requested, nginx will return http status 401 / not authorized
+    if ($BOOK_ID = "YYYY") {
+         return 401;
+    }
+
+    # if a book with id "ZZZZ" is requested, nginx will return http status 400 / bad request
+    if ($BOOK_ID = "ZZZZ") {
+         return 400;
+    }
+    
+    # if a book with id a diferent id is requested, nginx will return http status 200 / ok and an active book
+    return 200 '{"book_id":"$BOOK_ID","book_name":"test book","active":true}';
+ }
+ rewrite /books/(.*)/detail /books/$1/detail last;
+}
+Cookies are blocked in your browser. Please allow cookies to translate in-pageNot now
